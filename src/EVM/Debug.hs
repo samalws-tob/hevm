@@ -47,7 +47,7 @@ srcMapCodePos :: SourceCache -> SrcMap -> Maybe (Text, Int)
 srcMapCodePos cache sm =
   fmap (second f) $ cache.files ^? ix sm.srcMapFile
   where
-    f v = ByteString.count 0xa (ByteString.take (sm.srcMapOffset - 1) v) + 1
+    f v = ByteString.count 0xa (ByteString.take sm.srcMapOffset v) + 1
 
 srcMapCode :: SourceCache -> SrcMap -> Maybe ByteString
 srcMapCode cache sm =

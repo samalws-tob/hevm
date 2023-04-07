@@ -360,7 +360,7 @@ readStdJSON json = do
   let asts = force "JSON lacks abstract syntax trees." . preview (key "ast") <$> sources
       contractMap = f contracts
       contents src = (src, encodeUtf8 <$> HMap.lookup src (mconcat $ Map.elems $ snd <$> contractMap))
-  return (fst <$> contractMap, Map.fromList (HMap.toList asts), contents <$> (sort $ HMap.keys sources))
+  return (fst <$> contractMap, Map.fromList (HMap.toList asts), contents <$> (HMap.keys sources))
   where
     f :: (AsValue s) => HMap.HashMap Text s -> (Map Text (SolcContract, (HMap.HashMap Text Text)))
     f x = Map.fromList . (concatMap g) . HMap.toList $ x
