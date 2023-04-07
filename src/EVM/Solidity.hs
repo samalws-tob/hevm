@@ -71,6 +71,7 @@ import Data.Text (Text, pack, intercalate)
 import Data.Text qualified as Text
 import Data.Text.Encoding (encodeUtf8, decodeUtf8)
 import Data.Text.IO (readFile, writeFile)
+import qualified Data.Text.IO as TIO
 import Data.Vector (Vector)
 import Data.Vector qualified as Vector
 import Data.Word (Word8, Word32)
@@ -80,6 +81,8 @@ import System.IO hiding (readFile, writeFile)
 import System.IO.Temp
 import System.Process
 import Text.Read (readMaybe)
+
+import System.IO.Unsafe (unsafePerformIO)
 
 data StorageItem = StorageItem
   { slotType :: SlotType
@@ -322,10 +325,10 @@ readJSON json = case json ^? key "sourceList" of
 
 -- deprecate me soon
 readCombinedJSON :: Text -> Maybe (Map Text SolcContract, Map Text Value, [(Text, Maybe ByteString)])
-readCombinedJSON json = do
+readCombinedJSON json = unsafePerformIO $ (>>) (putStrLn "combinedJson:" >> TIO.putStrLn json) $ return $ do
   contracts <- f . KeyMap.toHashMapText <$> (json ^? key "contracts" . _Object)
   sources <- toList . fmap (view _String) <$> json ^? key "sourceList" . _Array
-  return (contracts, Map.fromList (HMap.toList asts), [ (x, Nothing) | x <- sources])
+  unsafePerformIO $ (>>) (putStrLn "sourceList:" >> print sources) $ return $ return (contracts, Map.fromList (HMap.toList asts), [ (x, Nothing) | x <- sources])
   where
     asts = KeyMap.toHashMapText $ fromMaybe (error "JSON lacks abstract syntax trees.") (json ^? key "sources" . _Object)
     f x = Map.fromList . HMap.toList $ HMap.mapWithKey g x
@@ -353,7 +356,7 @@ readCombinedJSON json = do
       }
 
 readStdJSON :: Text -> Maybe (Map Text SolcContract, Map Text Value, [(Text, Maybe ByteString)])
-readStdJSON json = do
+readStdJSON json = unsafePerformIO $ (>>) (putStrLn "stdJson:" >> print json) $ return $ do
   contracts <- KeyMap.toHashMapText <$> json ^? key "contracts" . _Object
   -- TODO: support the general case of "urls" and "content" in the standard json
   sources <- KeyMap.toHashMapText <$>  json ^? key "sources" . _Object
@@ -555,18 +558,23 @@ solidity' src = withSystemTempFile "hevm.sol" $ \path handle -> do
               "evm.deployedBytecode.generatedSources"
             ],
             "": [
-              "ast"
+              "ast",
+              "id"
             ]
           }
         }
       }
     }
     |]
+  putStrLn "SOLC INPUT"
+  readFile (path <> ".json") >>= print
   x <- pack <$>
     readProcess
       "solc"
       ["--allow-paths", path, "--standard-json", (path <> ".json")]
       ""
+  putStrLn "SOLC OUTPUT"
+  print x
   return (x, pack path)
 
 yul' :: Text -> IO (Text, Text)
@@ -589,7 +597,8 @@ yul' src = withSystemTempFile "hevm.yul" $ \path handle -> do
   return (x, pack path)
 
 solc :: Language -> Text -> IO Text
-solc lang src =
+solc lang src = do
+  putStrLn "running solc"
   withSystemTempFile "hevm.sol" $ \path handle -> do
     hClose handle
     writeFile path (stdjson lang src)
@@ -626,7 +635,7 @@ instance ToJSON StandardJSON where
                                "evm.deployedBytecode.generatedSources",
                                "evm.deployedBytecode.immutableReferences"
                               ]),
-                              "" .= (toJSON ["ast" :: String])
+                              "" .= (toJSON ["ast" :: String, "id"])
                              ]
                             ]
                     ]
