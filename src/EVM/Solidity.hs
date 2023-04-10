@@ -271,7 +271,8 @@ lineSubrange xs (s1, n1) i =
     else Just (s1 - s2, min (s2 + n2 - s1) n1)
 
 readSolc :: FilePath -> IO (Maybe (Map Text SolcContract, SourceCache))
-readSolc fp =
+readSolc fp = do
+  putStrLn "readSolc"
   (readJSON <$> readFile fp) >>=
     \case
       Nothing -> return Nothing

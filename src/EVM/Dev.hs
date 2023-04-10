@@ -50,6 +50,7 @@ runDappTest root =
 
 testOpts :: SolverGroup -> FilePath -> FilePath -> IO UnitTestOptions
 testOpts solvers root testFile = do
+  putStrLn "testOpts"
   srcInfo <- readSolc testFile >>= \case
     Nothing -> error "Could not read .sol.json file"
     Just (contractMap, sourceCache) ->

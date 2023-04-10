@@ -128,6 +128,7 @@ makeVeriOpts opts =
 -- | Top level CLI endpoint for dapp-test
 dappTest :: UnitTestOptions -> String -> Maybe String -> IO Bool
 dappTest opts solcFile cache' = do
+  putStrLn "dappTest"
   out <- liftIO $ readSolc solcFile
   case out of
     Just (contractMap, _) -> do

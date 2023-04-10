@@ -281,7 +281,8 @@ isFuzzTest (ConcreteTest _, _) = True
 isFuzzTest (InvariantTest _, _) = True
 
 main :: UnitTestOptions -> FilePath -> FilePath -> IO ()
-main opts root jsonFilePath =
+main opts root jsonFilePath = do
+  putStrLn "TTY.main"
   readSolc jsonFilePath >>=
     \case
       Nothing ->

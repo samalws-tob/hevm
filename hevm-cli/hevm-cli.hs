@@ -214,6 +214,7 @@ applyCache (state, cache) =
 unitTestOptions :: Command Options.Unwrapped -> SolverGroup -> String -> IO UnitTestOptions
 unitTestOptions cmd solvers testFile = do
   let root = fromMaybe "." cmd.dappRoot
+  putStrLn "unitTestOptions"
   srcInfo <- readSolc testFile >>= \case
     Nothing -> error "Could not read .sol.json file"
     Just (contractMap, sourceCache) ->
@@ -338,9 +339,10 @@ getSolver cmd = case cmd.solver of
                                 exitFailure
 
 getSrcInfo :: Command Options.Unwrapped -> IO DappInfo
-getSrcInfo cmd =
+getSrcInfo cmd = do
+  putStrLn "getSrcInfo"
   let root = fromMaybe "." cmd.dappRoot
-  in case cmd.jsonFile of
+  case cmd.jsonFile of
     Nothing ->
       pure emptyDapp
     Just json -> readSolc json >>= \case
@@ -434,7 +436,8 @@ getTimeout (Timeout c) = Just c
 getTimeout _ = Nothing
 
 dappCoverage :: UnitTestOptions -> Mode -> String -> IO ()
-dappCoverage opts _ solcFile =
+dappCoverage opts _ solcFile = do
+  putStrLn "dappCoverage"
   readSolc solcFile >>=
     \case
       Just (contractMap, sourceCache) -> do
