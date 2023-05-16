@@ -1048,6 +1048,9 @@ tests = testGroup "hevm"
     , testCase "Unwind" $ do
         let testFile = "test/contracts/pass/unwind.sol"
         runSolidityTest testFile ".*" >>= assertEqual "test result" True
+    , testCase "Cheat-Codes-Fork-Pass" $ do
+        let testFile = "test/contracts/pass/cheatCodesFork.sol"
+        runSolidityTest testFile ".*" >>= assertEqual "test result" True
     ]
   , testGroup "max-iterations"
     [ testCase "concrete-loops-reached" $ do

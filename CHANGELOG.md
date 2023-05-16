@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `vm.prank` now handles symbolic addresses
 - added `vm.deal` cheatcode
 - added `vm.assume` cheatcode
+- Two basic forking cheatcodes: `createFork` and `selectFork`
 
 ## Fixed
 
