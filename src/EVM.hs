@@ -1771,7 +1771,7 @@ cheatActions =
                       -- we don't support this at the moment
                       pure ()
                 Nothing ->
-                  pure () -- no-op: fork not found
+                  vmError (NonexistentFork forkId')
           _ -> vmError (BadCheatCode sig)
     ]
   where

@@ -11,6 +11,7 @@ interface Hevm {
     function addr(uint256) external returns (address);
     function ffi(string[] calldata) external returns (bytes memory);
     function prank(address) external;
+    function deal(address,uint256) external;
     function createFork(string calldata urlOrAlias) external returns (uint256);
     function selectFork(uint256 forkId) external;
 }
@@ -64,6 +65,12 @@ contract ForkTest is DSTest {
         assert(persistentState == 4);                   //      Check persistent state
         persistentState = 5;                            //      Set persistent state
         TestState(stateContract).setState(0);           //      Set initial external state
+        hevm.selectFork(forkId1);                       // Fork 1
+        hevm.deal(address(this), 10);                   //      Get some eth
+        payable(msg.sender).send(10);                   //      Send eth to msg.sender
+        uint256 senderBalance = msg.sender.balance;     //      Record msg.sender's balance
+        hevm.selectFork(forkId2);                       // Fork 2
+        assert(msg.sender.balance == senderBalance);    //      Check msg.sender's balance
         hevm.selectFork(0);                             // Default fork
         assert(persistentState == 5);                   //      Check persistent state
     }

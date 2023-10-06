@@ -522,6 +522,7 @@ data EvmError
   | ReturnDataOutOfBounds
   | NonceOverflow
   | BadCheatCode FunctionSelector
+  | NonexistentFork Int
   deriving (Show, Eq, Ord)
 
 -- | Sometimes we can only partially execute a given program
