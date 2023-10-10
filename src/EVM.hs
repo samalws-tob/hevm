@@ -1745,31 +1745,22 @@ cheatActions =
               case saved of
                 Just forkState -> do
                   vm <- get
-                  case (vm.env.storage, forkState.env.storage) of
-                    (ConcreteStore store, ConcreteStore savedStore) -> do
-                      let
-                        -- the current contract is persited across forks
-                        self = vm.state.contract
-                        this = fromMaybe (error "internal error: state contract")
-                                         (Map.lookup self vm.env.contracts)
-                        currStorage = fromMaybe mempty $ Map.lookup (fromIntegral self) store
-                        newStore = ConcreteStore $ Map.insert (fromIntegral self) currStorage savedStore
-                        newContracts = Map.insert self this forkState.env.contracts
-                        newEnv = forkState.env { storage = newStore, contracts = newContracts }
+                  let self = vm.state.contract
+                  fetchAccount vm.state.contract $ \this -> do
+                    let
+                      -- the current contract is persited across forks
+                      newContracts = Map.insert self this forkState.env.contracts
+                      newEnv = (forkState.env :: Env) { contracts = newContracts }
 
-                      when (vm.currentFork /= forkId') $ do
-                        modify' $ \vm' -> vm'
-                          { env = newEnv
-                          , block = forkState.block
-                          , forks = Seq.adjust' (\state -> (state :: ForkState)
-                              { env = vm.env, block = vm.block, cache = vm.cache }
-                            ) vm.currentFork  vm.forks
-                          , currentFork = forkId'
-                          }
-                    _ ->
-                      -- no-op: current storage and/or saved storage is symbolic
-                      -- we don't support this at the moment
-                      pure ()
+                    when (vm.currentFork /= forkId') $ do
+                      modify' $ \vm' -> vm'
+                        { env = newEnv
+                        , block = forkState.block
+                        , forks = Seq.adjust' (\state -> (state :: ForkState)
+                            { env = vm.env, block = vm.block, cache = vm.cache }
+                          ) vm.currentFork  vm.forks
+                        , currentFork = forkId'
+                        }
                 Nothing ->
                   vmError (NonexistentFork forkId')
           _ -> vmError (BadCheatCode sig)

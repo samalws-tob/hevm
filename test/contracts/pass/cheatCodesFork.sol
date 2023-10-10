@@ -24,7 +24,7 @@ contract TestState {
     }
 }
 /// @dev This contract's state should be persistent across forks, because it's the contract hevm deploys
-contract ForkTest is DSTest {
+contract CheatCodesFork is DSTest {
     Hevm hevm = Hevm(HEVM_ADDRESS);
     address stateContract;
     uint256 forkId1;
@@ -38,7 +38,7 @@ contract ForkTest is DSTest {
         persistentState = 0;
     }
 
-    function test_ForkedState() external {
+    function prove_ForkedState() external {
         hevm.selectFork(0);
         persistentState = 1;                            // Make sure this contract maintains its own state across fork
         hevm.selectFork(forkId1);                       // Fork 1
